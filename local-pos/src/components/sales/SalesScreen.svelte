@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { get } from 'svelte/store';
   import { cart, cartTotal, addToCart, removeFromCart, updateCartQuantity, clearCart, user, deviceConfig } from '../../stores/appStore.js';
-  import { productRepo, saleRepo } from '../../lib/db/database.js';
+  import { productRepo, saleRepo, stockRepo } from '../../lib/db/database.js';
   import { v4 as uuidv4 } from 'uuid';
 
   let barcodeInput = '';
@@ -12,6 +12,8 @@
   let isBarcodeless = false;
   let selectedQuantity = 1; // Sepette seçili miktar (1-10)
   let isProcessingSale = false; // Satış işlemi devam ediyor mu
+  let lastSaleTime = 0; // Son satış zamanı (timestamp)
+  let saleDebounceTimer = null; // Debounce timer
 
   // New Product Modal State
   let newProductBarcode = '';
@@ -27,31 +29,67 @@
       barcodeInputElement.focus();
     }
 
-    // Keyboard shortcuts
+    // Keyboard shortcuts - Debounce ile korumalı
     const handleKeyPress = (event) => {
+      // Tekrarlanan tuş basışlarını engelle
+      if (event.repeat) {
+        return;
+      }
+
       // F1 - Sepeti Sil
       if (event.key === 'F1' || event.code === 'F1') {
         event.preventDefault();
+        event.stopPropagation();
         const cartItems = get(cart);
         if (cartItems.length > 0 && !isProcessingSale) {
           clearCart();
         }
+        return;
       }
-      // F3 - Nakit
-      if (event.key === 'F3' || event.code === 'F3') {
+
+      // F3 - Nakit veya F4 - Kart
+      if ((event.key === 'F3' || event.code === 'F3') || (event.key === 'F4' || event.code === 'F4')) {
         event.preventDefault();
-        const cartItems = get(cart);
-        if (cartItems.length > 0 && !isProcessingSale) {
-          completeSale('cash');
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+
+        // ÇOKLU KORUMA: Her türlü durumda engelle
+        const now = Date.now();
+        const timeSinceLastSale = now - lastSaleTime;
+        
+        // 1. İşlem zaten devam ediyorsa hiçbir şey yapma
+        if (isProcessingSale) {
+          console.log('🚫 Satış zaten işleniyor, event engellendi');
+          return;
         }
-      }
-      // F4 - Kart
-      if (event.key === 'F4' || event.code === 'F4') {
-        event.preventDefault();
-        const cartItems = get(cart);
-        if (cartItems.length > 0 && !isProcessingSale) {
-          completeSale('card');
+
+        // 2. Son satıştan beri 1 saniyeden az geçtiyse engelle
+        if (timeSinceLastSale < 1000) {
+          console.log('🚫 Çok hızlı tuş basışı engellendi:', timeSinceLastSale, 'ms');
+          return;
         }
+
+        // 3. Debounce: Eğer zaten bir timer varsa iptal et
+        if (saleDebounceTimer) {
+          clearTimeout(saleDebounceTimer);
+          saleDebounceTimer = null;
+        }
+
+        // 4. Sepet kontrolü
+        const cartItems = get(cart);
+        if (!cartItems || cartItems.length === 0) {
+          return;
+        }
+
+        // 5. Payment method belirle
+        const paymentMethod = (event.key === 'F3' || event.code === 'F3') ? 'cash' : 'card';
+
+        // 6. Debounce ile işlemi başlat (100ms gecikme ile)
+        saleDebounceTimer = setTimeout(() => {
+          saleDebounceTimer = null;
+          lastSaleTime = Date.now();
+          completeSale(paymentMethod);
+        }, 100);
       }
     };
 
@@ -59,6 +97,11 @@
 
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
+      // Cleanup: Debounce timer'ı temizle
+      if (saleDebounceTimer) {
+        clearTimeout(saleDebounceTimer);
+        saleDebounceTimer = null;
+      }
     };
   });
 
@@ -193,6 +236,8 @@
     // Direkt sepete ekle, seçili miktar kadar
     addToCart(product, selectedQuantity);
     playBeep();
+    // Miktarı 1'e çek
+    selectedQuantity = 1;
   }
 
   function handleQuantityChange(productId, newQuantity) {
@@ -204,7 +249,7 @@
   }
 
   async function completeSale(paymentMethod) {
-    // Çoklu tıklamayı engelle
+    // ÇOKLU KORUMA: Her türlü durumda engelle
     if (isProcessingSale) {
       console.log('⚠️ Satış zaten işleniyor, bekleniyor...');
       return;
@@ -212,11 +257,19 @@
 
     const cartItems = get(cart);
     if (!cartItems || cartItems.length === 0) {
+      console.log('⚠️ Sepet boş, satış yapılamaz');
       return;
     }
 
-    // İşlemi başlat
+    // İşlemi başlat - EN ERKEN NOKTADA FLAG SET ET
     isProcessingSale = true;
+    lastSaleTime = Date.now();
+    
+    // Debounce timer'ı temizle
+    if (saleDebounceTimer) {
+      clearTimeout(saleDebounceTimer);
+      saleDebounceTimer = null;
+    }
 
     try {
       const receiptNumber = `RCP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -363,14 +416,28 @@
       <div class="payment-buttons">
         <button 
           class="btn-payment btn-cash" 
-          on:click={() => completeSale('cash')} 
+          on:click={() => {
+            const now = Date.now();
+            if (isProcessingSale || (now - lastSaleTime) < 1000) {
+              return;
+            }
+            lastSaleTime = now;
+            completeSale('cash');
+          }} 
           disabled={$cart.length === 0 || isProcessingSale}
         >
           💵 Nakit (F3)
         </button>
         <button 
           class="btn-payment btn-card" 
-          on:click={() => completeSale('card')} 
+          on:click={() => {
+            const now = Date.now();
+            if (isProcessingSale || (now - lastSaleTime) < 1000) {
+              return;
+            }
+            lastSaleTime = now;
+            completeSale('card');
+          }} 
           disabled={$cart.length === 0 || isProcessingSale}
         >
           💳 Kart (F4)
@@ -516,18 +583,22 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
-    height: calc(100vh - 80px);
-    padding: 20px;
+    height: calc(100vh - 50px);
+    min-height: calc(100vh - 50px);
+    padding: 15px;
     background: #f5f5f5;
+    overflow: hidden;
   }
 
   .left-panel, .right-panel {
     background: white;
     border-radius: 12px;
-    padding: 20px;
+    padding: 15px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: column;
+    height: 100%;
+    overflow: hidden;
   }
 
   .barcode-section {
@@ -636,6 +707,7 @@
   .cart-items {
     flex: 1;
     overflow-y: auto;
+    min-height: 0;
   }
 
   .empty-cart {
@@ -726,25 +798,29 @@
 
   .cart-footer {
     border-top: 2px solid #eee;
-    padding-top: 15px;
-    margin-top: 15px;
+    padding-top: 10px;
+    margin-top: auto;
+    flex-shrink: 0;
   }
 
   .cart-summary {
-    margin-bottom: 15px;
+    margin-bottom: 8px;
+    margin-top: 10px;
   }
 
   .summary-row {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
     color: #333;
+    font-size: 14px;
   }
 
   .summary-row.total {
-    font-size: 20px;
+    font-size: 14px;
     font-weight: 700;
     color: #667eea;
+    margin-top: 5px;
   }
 
   .payment-buttons {

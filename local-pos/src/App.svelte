@@ -384,8 +384,10 @@
 
   .content-area {
     flex: 1;
-    overflow-y: auto;
+    overflow: hidden;
     background: #f5f7fa;
+    display: flex;
+    flex-direction: column;
   }
 
   .warning-box {

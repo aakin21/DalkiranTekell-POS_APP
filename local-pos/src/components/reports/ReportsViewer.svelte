@@ -24,9 +24,26 @@
     cardTotal: 0
   };
   let showDatePicker = false;
+  let showTurkishDatePicker = false;
+  let selectedDay = '';
+  let selectedMonth = '';
+  let selectedYear = '';
+
+  // Türkçe ay isimleri
+  const turkishMonths = [
+    'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+    'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+  ];
 
   onMount(() => {
     loadData();
+    // Mevcut tarihi Türkçe seçiciye yükle
+    if (customDate) {
+      const date = new Date(customDate);
+      selectedDay = date.getDate().toString();
+      selectedMonth = (date.getMonth() + 1).toString();
+      selectedYear = date.getFullYear().toString();
+    }
   });
 
   function loadData() {
@@ -186,7 +203,8 @@
   }
 
   function sortProducts() {
-    productStats.sort((a, b) => {
+    // Yeni array oluşturarak Svelte reactive update'i tetikle
+    productStats = [...productStats].sort((a, b) => {
       let valueA, valueB;
 
       switch (sortColumn) {
@@ -280,24 +298,24 @@
       startDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 0, 0, 0);
       endDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 23, 59, 59);
     } else {
-      switch (dateFilter) {
-        case 'today':
-          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-          break;
-        case 'yesterday':
-          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 0, 0, 0);
-          endDate.setDate(endDate.getDate() - 1);
-          break;
-        case 'week':
-          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7, 0, 0, 0);
-          break;
-        case 'month':
-          startDate = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
-          break;
-        case 'all':
-        default:
-          startDate = new Date(2020, 0, 1);
-          break;
+    switch (dateFilter) {
+      case 'today':
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+        break;
+      case 'yesterday':
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 0, 0, 0);
+        endDate.setDate(endDate.getDate() - 1);
+        break;
+      case 'week':
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7, 0, 0, 0);
+        break;
+      case 'month':
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
+        break;
+      case 'all':
+      default:
+        startDate = new Date(2020, 0, 1);
+        break;
       }
     }
 
@@ -322,6 +340,46 @@
       loadData();
     }
   }
+
+  function openTurkishDatePicker() {
+    showTurkishDatePicker = true;
+    // Mevcut tarihi yükle veya bugünü seç
+    const today = new Date();
+    if (customDate) {
+      const date = new Date(customDate);
+      selectedDay = date.getDate().toString();
+      selectedMonth = (date.getMonth() + 1).toString();
+      selectedYear = date.getFullYear().toString();
+    } else {
+      selectedDay = today.getDate().toString();
+      selectedMonth = (today.getMonth() + 1).toString();
+      selectedYear = today.getFullYear().toString();
+    }
+  }
+
+  function applyTurkishDate() {
+    if (selectedDay && selectedMonth && selectedYear) {
+      const day = parseInt(selectedDay);
+      const month = parseInt(selectedMonth);
+      const year = parseInt(selectedYear);
+      
+      // YYYY-MM-DD formatına çevir
+      const dateStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+      customDate = dateStr;
+      dateFilter = 'custom';
+      showTurkishDatePicker = false;
+      loadData();
+    }
+  }
+
+  function cancelTurkishDatePicker() {
+    showTurkishDatePicker = false;
+  }
+
+  // Günler listesi (1-31)
+  const days = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
+  // Yıllar listesi (2020-2030)
+  const years = Array.from({ length: 11 }, (_, i) => (2020 + i).toString());
 
   function formatCurrency(amount, hideForStaff = false) {
     if (hideForStaff && $user && $user.role !== 'admin') {
@@ -366,13 +424,25 @@
         <option value="all">Tümü</option>
         <option value="custom">Özel Tarih Seç</option>
       </select>
+      <button 
+        type="button"
+        class="date-picker-btn"
+        on:click={openTurkishDatePicker}
+        title="Türkçe takvimden gün seçin"
+      >
+        {#if customDate}
+          {new Date(customDate).toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' })}
+        {:else}
+          📅 Tarih Seç
+        {/if}
+      </button>
+      <!-- Gizli HTML5 date input (fallback için) -->
       <input 
         type="date" 
         bind:value={customDate} 
         on:change={handleCustomDateChange}
-        placeholder="Tarih seçin"
-        class="date-picker"
-        title="Takvimden gün seçin"
+        class="date-picker-hidden"
+        style="display: none;"
       />
     </div>
   </div>
@@ -546,10 +616,10 @@
               <div class="amount"><strong>{formatCurrency(productStats.reduce((sum, p) => sum + p.cardTotal, 0), true)}</strong></div>
               <div class="amount"><strong>{formatCurrency(productStats.reduce((sum, p) => sum + p.cashTotal, 0), true)}</strong></div>
               <div></div>
-            </div>
-          </div>
-        {/if}
-      </div>
+                </div>
+                    </div>
+                  {/if}
+                </div>
 
     {:else if activeTab === 'stock'}
       <!-- Stock Summary -->
@@ -627,23 +697,84 @@
   </div>
 </div>
 
+<!-- Türkçe Tarih Seçici Modal -->
+{#if showTurkishDatePicker}
+  <div class="modal-overlay" on:click={cancelTurkishDatePicker}>
+    <div class="turkish-date-picker-modal" on:click|stopPropagation>
+      <div class="modal-header">
+        <h3>📅 Tarih Seç</h3>
+        <button class="btn-close" on:click={cancelTurkishDatePicker}>✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="date-selectors">
+          <div class="date-selector-group">
+            <label>Gün:</label>
+            <select bind:value={selectedDay} class="date-select">
+              <option value="">Seçiniz</option>
+              {#each days as day}
+                <option value={day}>{day}</option>
+              {/each}
+            </select>
+          </div>
+          <div class="date-selector-group">
+            <label>Ay:</label>
+            <select bind:value={selectedMonth} class="date-select">
+              <option value="">Seçiniz</option>
+              {#each turkishMonths as month, index}
+                <option value={index + 1}>{month}</option>
+              {/each}
+            </select>
+          </div>
+          <div class="date-selector-group">
+            <label>Yıl:</label>
+            <select bind:value={selectedYear} class="date-select">
+              <option value="">Seçiniz</option>
+              {#each years as year}
+                <option value={year}>{year}</option>
+              {/each}
+            </select>
+          </div>
+        </div>
+        {#if selectedDay && selectedMonth && selectedYear}
+          <div class="selected-date-preview">
+            Seçilen Tarih: <strong>{selectedDay} {turkishMonths[parseInt(selectedMonth) - 1]} {selectedYear}</strong>
+          </div>
+        {/if}
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" on:click={cancelTurkishDatePicker}>İptal</button>
+        <button 
+          class="btn-confirm" 
+          on:click={applyTurkishDate}
+          disabled={!selectedDay || !selectedMonth || !selectedYear}
+        >
+          ✅ Uygula
+        </button>
+      </div>
+    </div>
+  </div>
+{/if}
+
 <style>
   .reports-viewer {
-    padding: 30px;
-    max-width: 1600px;
-    margin: 0 auto;
+    padding: 15px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
 
   .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 15px;
   }
 
   .header h2 {
     margin: 0;
-    font-size: 28px;
+    font-size: 22px;
     color: #333;
   }
 
@@ -673,7 +804,11 @@
     border-color: #667eea;
   }
 
-  .date-picker {
+  .date-picker-hidden {
+    display: none;
+  }
+
+  .date-picker-btn {
     padding: 10px 16px;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
@@ -681,17 +816,176 @@
     font-weight: 500;
     cursor: pointer;
     background: white;
+    color: #333;
+    transition: all 0.3s;
   }
 
-  .date-picker:focus {
+  .date-picker-btn:hover {
+    border-color: #667eea;
+    background: #f8f9fa;
+  }
+
+  .date-picker-btn:focus {
     outline: none;
     border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  /* Türkçe Tarih Seçici Modal */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .turkish-date-picker-modal {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  }
+
+  .turkish-date-picker-modal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .turkish-date-picker-modal .modal-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 20px;
+  }
+
+  .turkish-date-picker-modal .btn-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+  }
+
+  .turkish-date-picker-modal .btn-close:hover {
+    background: #f5f5f5;
+    color: #333;
+  }
+
+  .turkish-date-picker-modal .modal-body {
+    padding: 20px;
+  }
+
+  .date-selectors {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+
+  .date-selector-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .date-selector-group label {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+  }
+
+  .date-select {
+    padding: 10px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    background: white;
+    color: #333;
+  }
+
+  .date-select:focus {
+    outline: none;
+    border-color: #667eea;
+  }
+
+  .selected-date-preview {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 16px;
+    color: #333;
+  }
+
+  .selected-date-preview strong {
+    color: #667eea;
+    font-size: 18px;
+  }
+
+  .turkish-date-picker-modal .modal-footer {
+    padding: 20px;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  .turkish-date-picker-modal .btn-cancel,
+  .turkish-date-picker-modal .btn-confirm {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .turkish-date-picker-modal .btn-cancel {
+    background: #f5f5f5;
+    color: #333;
+  }
+
+  .turkish-date-picker-modal .btn-cancel:hover {
+    background: #e0e0e0;
+  }
+
+  .turkish-date-picker-modal .btn-confirm {
+    background: #667eea;
+    color: white;
+  }
+
+  .turkish-date-picker-modal .btn-confirm:hover:not(:disabled) {
+    background: #5568d3;
+  }
+
+  .turkish-date-picker-modal .btn-confirm:disabled {
+    background: #ccc;
+    cursor: not-allowed;
   }
 
   .tabs {
     display: flex;
     gap: 10px;
-    margin-bottom: 30px;
+    margin-bottom: 15px;
     border-bottom: 2px solid #e0e0e0;
   }
 
@@ -719,21 +1013,24 @@
   .content {
     background: white;
     border-radius: 12px;
-    padding: 30px;
+    padding: 15px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
   }
 
   .summary-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
   }
 
   .summary-card {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 20px;
+    padding: 15px;
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -747,7 +1044,7 @@
   }
 
   .card-icon {
-    font-size: 48px;
+    font-size: 36px;
   }
 
   .card-content {
@@ -756,23 +1053,23 @@
   }
 
   .card-label {
-    font-size: 13px;
+    font-size: 12px;
     opacity: 0.9;
-    margin-bottom: 5px;
+    margin-bottom: 3px;
   }
 
   .card-value {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 700;
   }
 
   .data-table-container {
-    margin-top: 20px;
+    margin-top: 15px;
   }
 
   .data-table-container h3 {
-    margin: 0 0 15px 0;
-    font-size: 20px;
+    margin: 0 0 10px 0;
+    font-size: 18px;
     color: #333;
   }
 

@@ -684,16 +684,18 @@
 
 <style>
   .stock-adjustment {
-    padding: 30px;
-    max-width: 1600px;
-    margin: 0 auto;
+    padding: 15px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
   }
 
   .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 15px;
   }
 
   .header-left {
@@ -703,7 +705,7 @@
 
   .header h2 {
     margin: 0;
-    font-size: 28px;
+    font-size: 22px;
     color: #333;
   }
 
@@ -762,19 +764,21 @@
 
   .content-grid {
     display: grid;
-    grid-template-columns: 400px 1fr;
-    gap: 20px;
+    grid-template-columns: 350px 1fr;
+    gap: 15px;
+    flex: 1;
+    min-height: 0;
   }
 
   .search-panel {
     background: white;
-    padding: 20px;
+    padding: 15px;
     border-radius: 12px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    height: fit-content;
-    max-height: calc(100vh - 180px);
     display: flex;
     flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
   }
 
   .search-panel h3 {
@@ -815,7 +819,7 @@
   .product-list {
     flex: 1;
     overflow-y: auto;
-    max-height: calc(100vh - 300px);
+    min-height: 0;
   }
 
   .empty-message {
@@ -879,9 +883,11 @@
 
   .adjustment-panel {
     background: white;
-    padding: 25px;
+    padding: 15px;
     border-radius: 12px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow-y: auto;
+    min-height: 0;
   }
 
   .selected-product h3 {
