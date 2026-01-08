@@ -1,0 +1,69 @@
+═══════════════════════════════════════════════════════════════
+  DALKIRAN POS SİSTEMİ - MERKEZ SUNUCU
+═══════════════════════════════════════════════════════════════
+
+📦 KURULUM:
+
+1. Bu klasörü USB'den bilgisayara kopyalayın
+2. Node.js yüklü olmalı (https://nodejs.org)
+3. İlk kez çalıştırmadan önce:
+   - Klasöre girin
+   - "npm install" komutunu çalıştırın (sadece bir kez)
+
+
+🚀 ÇALIŞTIRMA:
+
+1. "start.bat" dosyasına çift tıklayın
+2. Backend başlayacak ve tarayıcıda Admin Panel açılacak
+3. Giriş yapın:
+   - Kullanıcı Adı: dalkiran
+   - Şifre: bayerakin
+
+
+⏹️ KAPATMA:
+
+1. "stop.bat" dosyasına çift tıklayın
+   VEYA
+2. Backend penceresini kapatın
+
+
+🔐 GİRİŞ BİLGİLERİ:
+
+Admin:
+  Kullanıcı: dalkiran
+  Şifre: bayerakin
+
+Çalışanlar (Tekeller için):
+  Tekel 1: calisan1 / dalkiran
+  Tekel 2: calisan2 / dalkiran
+  Tekel 3: calisan3 / dalkiran
+  Tekel 4: calisan4 / dalkiran
+  Tekel 5: calisan5 / dalkiran
+
+
+📊 ERİŞİM:
+
+Backend API: http://localhost:3000/auth/login
+Admin Panel: http://localhost:3000 (otomatik açılır)
+
+
+📁 VERİTABANI:
+
+- SQLite kullanılıyor
+- Dosya: dalkiran.db
+- Yedek almak için bu dosyayı kopyalayın
+
+
+⚙️ ÖNEMLİ NOTLAR:
+
+1. İlk çalıştırmada seed.js ile test verileri oluşturulmuştur
+2. Sistem her zaman 3000 portunda çalışır
+3. Admin Panel statik dosyalar olarak backend'den sunuluyor
+4. Local POS uygulaması ayrı bir projedir (kasalar için)
+
+
+📞 DESTEK:
+
+Sorun olursa backend penceresindeki hata mesajlarına bakın
+
+═══════════════════════════════════════════════════════════════

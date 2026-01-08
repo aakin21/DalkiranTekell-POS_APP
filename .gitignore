@@ -1,0 +1,70 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build outputs
+dist/
+build/
+*.exe
+*.msi
+*.dll
+*.pdb
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Tauri
+src-tauri/target/
+src-tauri/gen/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Compiled files
+*.js.map
+*.d.ts
+tsconfig.tsbuildinfo
+
+# Public assets (build outputs)
+public/assets/
+
+# Test files
+*.test.js
+*.spec.js
+
+# Coverage
+coverage/
+
+# Local config
+config.local.json

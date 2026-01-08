@@ -1,0 +1,57 @@
+╔════════════════════════════════════════════════════════════╗
+║          DALKIRAN POS SİSTEMİ - KULLANIM KILAVUZU         ║
+╚════════════════════════════════════════════════════════════╝
+
+📌 BAŞLATMA:
+   1. BAŞLAT.bat dosyasına çift tıklayın
+   2. 15 saniye bekleyin (Backend hazırlanıyor)
+   3. POS uygulaması otomatik açılacak
+
+📌 KAPATMA:
+   1. KAPAT.bat dosyasına çift tıklayın
+   2. Tüm process'ler kapanacak
+
+📌 İLK KULLANIMDA:
+   1. Aktivasyon Kodu: tekel006
+   2. Kullanıcı Adı: admin
+   3. Şifre: admin123
+
+📌 YENİ ÜRÜN EKLEME (Fiyatlarla):
+   1. Stok Ayarlama sayfasına git
+   2. "➕ Yeni Ürün Ekle" butonuna tıkla
+   3. Bilgileri gir:
+      - Barkod numarası
+      - Ürün adı
+      - Satış Fiyatı ⭐ ÖNEMLİ!
+      - Alış Fiyatı ⭐ ÖNEMLİ!
+      - Başlangıç stok (opsiyonel)
+   4. Kaydet
+
+📌 ÜRÜN FİYATLARINI GÜNCELLEME:
+   1. Stok Ayarlama sayfasına git
+   2. Sol taraftan ürünü ara/seç
+   3. Sağ panelde "💰 Fiyat Güncelle" butonuna tıkla
+   4. Yeni fiyatları gir
+   5. "✅ Fiyatları Güncelle" ile kaydet
+
+📌 RAPORLARDA KAR GÖRME:
+   - Raporlar sayfasında:
+     * Toplam Ciro (mavi)
+     * Toplam Kar (yeşil) ⭐
+     * Nakit toplam
+     * Kart toplam
+   - NOT: Sadece alış fiyatı olan ürünlerde kar hesaplanır!
+
+📌 SORUN ÇÖZME:
+   ❌ Uygulama açılmıyor?
+      → KAPAT.bat çalıştır, sonra BAŞLAT.bat
+
+   ❌ Backend bağlanamıyor?
+      → 15 saniye bekle, hala olmazsa yeniden başlat
+
+   ❌ Fiyatlar görünmüyor?
+      → Yeni ürün eklerken mutlaka fiyatları gir
+      → Eski ürünler için "Fiyat Güncelle" kullan
+
+═══════════════════════════════════════════════════════════
+İyi satışlar! 🎉
