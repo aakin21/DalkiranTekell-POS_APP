@@ -378,8 +378,8 @@
 
   // Günler listesi (1-31)
   const days = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
-  // Yıllar listesi (2020-2030)
-  const years = Array.from({ length: 11 }, (_, i) => (2020 + i).toString());
+  // Yıllar listesi (2025-2035)
+  const years = Array.from({ length: 11 }, (_, i) => (2025 + i).toString());
 
   function formatCurrency(amount, hideForStaff = false) {
     if (hideForStaff && $user && $user.role !== 'admin') {
