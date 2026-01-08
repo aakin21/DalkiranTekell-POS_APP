@@ -384,18 +384,20 @@
 
 <style>
   .refund-screen {
-    padding: 30px;
-    max-width: 1400px;
-    margin: 0 auto;
+    padding: 10px;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    box-sizing: border-box;
   }
 
   .header {
-    margin-bottom: 30px;
+    margin-bottom: 10px;
   }
 
   .header h2 {
     margin: 0;
-    font-size: 28px;
+    font-size: 18px;
     color: #333;
   }
 
@@ -423,17 +425,18 @@
 
   .search-section {
     background: white;
-    padding: 30px;
-    border-radius: 12px;
+    padding: 12px;
+    border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    margin-bottom: 30px;
+    margin-bottom: 10px;
   }
 
   .search-box label {
     display: block;
     font-weight: 600;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
     color: #333;
+    font-size: 13px;
   }
 
   .search-input-group {
@@ -443,10 +446,10 @@
 
   .receipt-input {
     flex: 1;
-    padding: 14px 16px;
+    padding: 8px 12px;
     border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 16px;
+    border-radius: 6px;
+    font-size: 14px;
     font-family: monospace;
     transition: all 0.3s;
   }
@@ -458,12 +461,12 @@
   }
 
   .btn-search {
-    padding: 14px 28px;
+    padding: 8px 16px;
     background: #667eea;
     color: white;
     border: none;
-    border-radius: 8px;
-    font-size: 16px;
+    border-radius: 6px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
@@ -486,22 +489,22 @@
 
   .sale-details {
     background: white;
-    padding: 25px;
-    border-radius: 12px;
+    padding: 12px;
+    border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
+    margin-bottom: 10px;
   }
 
   .details-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
   }
 
   .details-header h3 {
     margin: 0;
-    font-size: 20px;
+    font-size: 14px;
     color: #333;
   }
 
@@ -523,15 +526,16 @@
   .info-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
+    gap: 8px;
   }
 
   .info-item {
     display: flex;
     justify-content: space-between;
-    padding: 12px;
+    padding: 8px;
     background: #f8f9fa;
     border-radius: 6px;
+    font-size: 12px;
   }
 
   .info-item .label {
@@ -546,20 +550,21 @@
 
   .items-section {
     background: white;
-    padding: 25px;
-    border-radius: 12px;
+    padding: 12px;
+    border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   }
 
   .items-section h3 {
-    margin: 0 0 10px 0;
-    font-size: 20px;
+    margin: 0 0 6px 0;
+    font-size: 14px;
     color: #333;
   }
 
   .instruction {
-    margin: 0 0 20px 0;
+    margin: 0 0 10px 0;
     color: #666;
+    font-size: 12px;
   }
 
   .items-table {
@@ -574,16 +579,18 @@
     grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
     background: #f8f9fa;
     font-weight: 600;
-    padding: 12px;
+    padding: 8px;
     border-bottom: 2px solid #e0e0e0;
+    font-size: 12px;
   }
 
   .table-row {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
-    padding: 15px 12px;
+    padding: 8px;
     border-bottom: 1px solid #e0e0e0;
     align-items: center;
+    font-size: 12px;
   }
 
   .table-row:last-child {
@@ -622,11 +629,11 @@
   }
 
   .quantity-input {
-    width: 80px;
-    padding: 8px;
+    width: 60px;
+    padding: 6px;
     border: 2px solid #e0e0e0;
     border-radius: 6px;
-    font-size: 16px;
+    font-size: 13px;
     text-align: center;
     font-weight: 600;
   }
@@ -645,36 +652,37 @@
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    gap: 20px;
-    padding: 20px;
+    gap: 15px;
+    padding: 12px;
     background: #f8f9fa;
     border-radius: 8px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
   }
 
   .summary-label {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 600;
     color: #333;
   }
 
   .summary-amount {
-    font-size: 28px;
+    font-size: 20px;
     font-weight: 700;
     color: #f44336;
   }
 
   .btn-proceed-refund {
     width: 100%;
-    padding: 16px;
+    padding: 12px;
     background: #f44336;
     color: white;
     border: none;
     border-radius: 8px;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
+    margin-top: 10px;
   }
 
   .btn-proceed-refund:hover:not(:disabled) {

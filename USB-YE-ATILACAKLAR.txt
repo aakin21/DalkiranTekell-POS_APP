@@ -1,0 +1,63 @@
+═══════════════════════════════════════════════════════════════
+  DALKIRAN POS - USB'YE ATILACAK DOSYALAR
+═══════════════════════════════════════════════════════════════
+
+📁 ANA KLASOR (Tum dalkiran klasoru):
+   - dalkiran/
+      ├── BAŞLAT.bat (✅ GUNCELLENDI - npm install kontrolu var)
+      ├── dalkiran-pos.exe
+      ├── BINARY-KONTROL.bat (opsiyonel - kontrol icin)
+      ├── KODLARI-OLUSTUR.bat (yeni PC'de kodlari olusturmak icin)
+      ├── AKTIVASYON-TEST.bat (opsiyonel - test icin)
+      ├── central-backend/ (TUM KLASOR - node_modules dahil)
+      └── local-pos/ (gerekiyorsa)
+
+📦 OZEL DOSYALAR:
+
+1. better_sqlite3.node (Binary dosyasi)
+   - Konum: USB'de better_sqlite3_binary/ klasorunde olacak
+   - Yeni PC'de: central-backend/node_modules/better-sqlite3/build/Release/ klasorune kopyala
+
+2. Build Tools (gerekirse):
+   - vs_buildtools.exe (1.5 MB)
+   - Eger binary calismazsa kullanilacak
+
+═══════════════════════════════════════════════════════════════
+
+✅ AKTIVASYON KODLARI:
+   - TEKEL001, TEKEL002, TEKEL003, TEKEL004, TEKEL005, TEKEL006
+   - Her kod birden fazla kez kullanilabilir!
+   - Ayni kod ile tekrar giris yapinca ayni tekelden devam eder
+   - Loglar ve database kaybolmaz (local SQLite dosyasinda)
+
+═══════════════════════════════════════════════════════════════
+
+📝 YENI PC'DE YAPILACAKLAR (SIRAYLA):
+
+1. ✅ Binary dosyasini kopyala
+   → central-backend/node_modules/better-sqlite3/build/Release/
+
+2. ✅ KODLARI-OLUSTUR.bat calistir
+   → Mağazalar ve aktivasyon kodları oluşur
+
+3. ✅ BAŞLAT.bat calistir
+   → node_modules kontrolu yapar (yoksa npm install)
+   → Backend başlar
+   → Exe açılır
+
+4. ✅ POS'ta aktivasyon kodu gir
+   → TEKEL001 - TEKEL006 arası bir kod
+
+5. ✅ Giriş yap
+   → Username: dalkiran1, dalkiran2, ... (her tekel için)
+   → Password: dalkiran
+
+═══════════════════════════════════════════════════════════════
+
+💾 VERI KAYBI YOK:
+   - Device config → localStorage'da saklanir
+   - Sales, products, stocks → local SQLite database'de (pos.db)
+   - Ayni aktivasyon kodu ile tekrar giris → Ayni data devam eder
+   - PC kapanirsa bile data kaybolmaz
+
+═══════════════════════════════════════════════════════════════

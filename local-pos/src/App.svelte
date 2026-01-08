@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { get } from 'svelte/store';
-  import { currentView, user, deviceConfig, initializeApp, logout } from './stores/appStore.js';
+  import { currentView, user, deviceConfig, initializeApp, logout, toggleAutoPrint } from './stores/appStore.js';
   import { startAutoSync } from './lib/sync/syncService.js';
   import { initDatabase } from './lib/db/database.js';
 
@@ -73,6 +73,13 @@
         </div>
 
         <div class="user-info">
+          <button
+            class="btn-printer {$deviceConfig.auto_print_enabled ? 'active' : ''}"
+            on:click={toggleAutoPrint}
+            title={$deviceConfig.auto_print_enabled ? 'Otomatik yazdırma AÇIK' : 'Otomatik yazdırma KAPALI'}
+          >
+            🖨️ {$deviceConfig.auto_print_enabled ? 'Yazdırma: AÇIK' : 'Yazdırma: KAPALI'}
+          </button>
           <div class="user-details">
             <span class="username">👤 {$user.full_name}</span>
             <span class="role">{$user.role === 'admin' ? 'Yönetici' : 'Personel'}</span>
@@ -269,6 +276,29 @@
   .role {
     font-size: 10px;
     opacity: 0.9;
+  }
+
+  .btn-printer {
+    padding: 5px 12px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-right: 12px;
+  }
+
+  .btn-printer:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .btn-printer.active {
+    background: rgba(76, 175, 80, 0.3);
+    border-color: rgba(76, 175, 80, 0.5);
   }
 
   .btn-logout {

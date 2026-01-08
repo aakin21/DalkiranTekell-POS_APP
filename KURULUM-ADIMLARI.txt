@@ -1,0 +1,137 @@
+═══════════════════════════════════════════════════════════════
+  DALKIRAN POS - YENİ PC'DE KURULUM ADIMLARI
+═══════════════════════════════════════════════════════════════
+
+📦 ADIM 1: USB'DEN 2. PC'YE KOPYALA
+───────────────────────────────────────────────────────────────
+
+1. USB'yi 2. PC'ye tak
+2. Tüm "dalkiran" klasörünü 2. PC'ye kopyala
+   → Örnek: C:\dalkiran\ veya Masaüstü\dalkiran\
+
+📦 ADIM 2: ZIP DOSYALARINI AÇ
+───────────────────────────────────────────────────────────────
+
+1. "dalkiran" klasörüne git
+
+2. node_modules_backend.zip dosyasını bul
+   → Sağ tık → "Extract All..." veya "Extract Here"
+   → Açılan pencerede klasör seç: "central-backend\node_modules\"
+   → VEYA zip'i "central-backend\" klasörüne kopyala, orada aç
+   → Sonuç: "central-backend\node_modules\" klasörü dolu olmalı
+
+3. node_modules_pos.zip dosyasını bul
+   → Sağ tık → "Extract All..." veya "Extract Here"
+   → Açılan pencerede klasör seç: "local-pos\node_modules\"
+   → VEYA zip'i "local-pos\" klasörüne kopyala, orada aç
+   → Sonuç: "local-pos\node_modules\" klasörü dolu olmalı
+
+⚠️ ÖNEMLİ: Zip'leri açtıktan sonra node_modules klasörlerinin
+   içinde dosyalar olduğundan emin ol!
+
+📦 ADIM 3: BINARY DOSYASI KONTROLÜ
+───────────────────────────────────────────────────────────────
+
+1. Şu dosyanın var olduğunu kontrol et:
+   → central-backend\node_modules\better-sqlite3\build\Release\better_sqlite3.node
+
+2. EĞER YOKSA:
+   → USB'de ayrı bir klasörde better_sqlite3.node varsa onu kopyala
+   → VEYA npm rebuild better-sqlite3 yap (internet gerekir)
+
+📦 ADIM 4: İLK KURULUM (KODLARI OLUŞTUR)
+───────────────────────────────────────────────────────────────
+
+1. "dalkiran" klasörüne git
+
+2. KODLARI-OLUSTUR.bat dosyasını çalıştır
+   → Çift tıkla veya sağ tık → "Run as administrator"
+   → Bu işlem:
+     * Mağazaları oluşturur (Tekel 1, Tekel 2, vb.)
+     * Kullanıcıları oluşturur (dalkiran1, dalkiran2, vb.)
+     * Aktivasyon kodlarını oluşturur (TEKEL001-TEKEL006)
+
+3. İşlem bitince şu mesajı göreceksin:
+   ✅ İŞLEM TAMAMLANDI!
+   📋 AKTIVASYON KODLARI:
+      TEKEL001
+      TEKEL002
+      ...
+
+📦 ADIM 5: UYGULAMAYI BAŞLAT
+───────────────────────────────────────────────────────────────
+
+1. BAŞLAT.bat dosyasını çalıştır
+   → Çift tıkla
+   → Bu işlem:
+     * node_modules kontrolü yapar
+     * Backend'i başlatır (http://localhost:3000)
+     * Exe'yi açar (veya installer'ı açar)
+
+2. EĞER INSTALLER AÇILIRSA:
+   → Installer'dan kurulum yap
+   → Kurulum bitince uygulama otomatik açılır
+
+3. EĞER EXE AÇILIRSA:
+   → Direkt uygulama açılır
+
+📦 ADIM 6: AKTİVASYON
+───────────────────────────────────────────────────────────────
+
+1. Uygulama açıldığında "Cihaz Aktivasyonu" ekranı gelir
+
+2. Aktivasyon kodu gir:
+   → TEKEL001, TEKEL002, TEKEL003, TEKEL004, TEKEL005, TEKEL006
+   → Herhangi birini seçebilirsin
+
+3. "Aktive Et" butonuna tıkla
+
+4. Başarılı mesajı gelince login ekranı açılır
+
+📦 ADIM 7: GİRİŞ YAP
+───────────────────────────────────────────────────────────────
+
+1. Username: dalkiran1 (veya dalkiran2, dalkiran3, vb.)
+   → TEKEL001 için → dalkiran1
+   → TEKEL002 için → dalkiran2
+   → TEKEL003 için → dalkiran3
+   → vb.
+
+2. Password: dalkiran (hepsi için aynı)
+
+3. "Giriş Yap" butonuna tıkla
+
+4. POS ekranı açılır! ✅
+
+═══════════════════════════════════════════════════════════════
+
+⚠️ SORUN GİDERME:
+
+1. "better_sqlite3.node bulunamadı" hatası:
+   → Zip'leri açtığından emin ol
+   → VEYA npm rebuild better-sqlite3 yap
+
+2. "Backend bağlanamıyor" hatası:
+   → Backend'in çalıştığından emin ol
+   → http://localhost:3000 açılıyor mu kontrol et
+
+3. "Aktivasyon kodu çalışmıyor":
+   → KODLARI-OLUSTUR.bat çalıştırdın mı?
+   → Backend çalışıyor mu?
+
+4. "Exe açılmıyor":
+   → dalkiran-pos.exe dosyası var mı?
+   → VEYA installer'dan kur
+
+═══════════════════════════════════════════════════════════════
+
+✅ BAŞARILI KURULUM SONRASI:
+
+- POS ekranı açılır
+- Satış yapabilirsin
+- Raporları görebilirsin
+- Stok ayarlama yapabilirsin
+- Fiş yazdırabilirsin
+
+═══════════════════════════════════════════════════════════════
+

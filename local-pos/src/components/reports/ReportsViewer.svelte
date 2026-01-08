@@ -1,6 +1,7 @@
 <script>
   import { deviceConfig, user } from '../../stores/appStore.js';
   import { saleRepo, refundRepo, stockRepo, productRepo } from '../../lib/db/database.js';
+  import { printReceipt } from '../../lib/printer/printerService.js';
   import { onMount } from 'svelte';
 
   let activeTab = 'sales'; // sales, products, stock
@@ -28,6 +29,8 @@
   let selectedDay = '';
   let selectedMonth = '';
   let selectedYear = '';
+  let showReceiptModal = false;
+  let receiptData = null;
 
   // Türkçe ay isimleri
   const turkishMonths = [
@@ -392,6 +395,27 @@
     return new Date(dateString).toLocaleString('tr-TR');
   }
 
+  async function printSaleReceipt(sale) {
+    try {
+      const config = $deviceConfig;
+
+      const printData = {
+        receipt_number: sale.receipt_number,
+        sale_date: new Date(sale.created_at).getTime(),
+        store_name: config.store_name,
+        user_name: sale.user_name || 'Personel',
+        total_amount: sale.total_amount,
+        discount_amount: sale.discount_amount || 0,
+        final_amount: sale.final_amount
+      };
+
+      await printReceipt(printData, sale.items || [], sale.payments || []);
+    } catch (error) {
+      console.error('Fiş yazdırma hatası:', error);
+      alert('Fiş yazdırılamadı. Lütfen yazıcı bağlantısını kontrol edin.');
+    }
+  }
+
   function getSortIcon(column) {
     if (sortColumn !== column) return '↕️';
     return sortDirection === 'desc' ? '↓' : '↑';
@@ -524,17 +548,18 @@
           </div>
         {:else}
           <div class="data-table">
-            <div class="table-header">
+            <div class="table-header" style="grid-template-columns: 1.5fr 1.5fr 1fr 1fr 1fr 1fr 0.8fr;">
               <div>Fiş No</div>
               <div>Tarih</div>
               <div>Ürün Sayısı</div>
               <div>Tutar</div>
               <div>Ödeme</div>
               <div>Durum</div>
+              <div>İşlem</div>
             </div>
 
             {#each salesData as sale}
-              <div class="table-row">
+              <div class="table-row" style="grid-template-columns: 1.5fr 1.5fr 1fr 1fr 1fr 1fr 0.8fr;">
                 <div class="receipt-number">{sale.receipt_number}</div>
                 <div>{formatDateTime(sale.created_at)}</div>
                 <div>{sale.items?.length || 0} adet</div>
@@ -559,6 +584,11 @@
                   {:else}
                     <span class="status-badge pending" style="margin-left: 5px;">⏳ Bekliyor</span>
                   {/if}
+                </div>
+                <div>
+                  <button class="btn-print-receipt" on:click={() => printSaleReceipt(sale)} title="Fişi Yazdır">
+                    🖨️
+                  </button>
                 </div>
               </div>
             {/each}
@@ -749,6 +779,120 @@
           disabled={!selectedDay || !selectedMonth || !selectedYear}
         >
           ✅ Uygula
+        </button>
+      </div>
+    </div>
+  </div>
+{/if}
+
+<!-- Receipt Modal -->
+{#if showReceiptModal && receiptData}
+  <div class="modal-overlay" on:click={closeReceiptModal}>
+    <div class="receipt-modal" on:click|stopPropagation>
+      <div class="receipt-content" id="receipt-content">
+        <div class="receipt-header">
+          <h2>{receiptData.storeName}</h2>
+          <p class="receipt-date">{receiptData.date}</p>
+          <p class="receipt-number">Fiş No: {receiptData.receiptNumber}</p>
+          <p class="receipt-user">Kasiyer: {receiptData.userName}</p>
+        </div>
+        
+        <div class="receipt-divider"></div>
+        
+        <div class="receipt-items">
+          {#each receiptData.items as item}
+            <div class="receipt-item">
+              <div class="item-name">{item.product_name || 'Bilinmeyen Ürün'}</div>
+              <div class="item-details">
+                <span>{item.quantity} x ₺{item.unit_price?.toFixed(2) || '0.00'}</span>
+                <span class="item-total">₺{((item.quantity || 0) * (item.unit_price || 0)).toFixed(2)}</span>
+              </div>
+            </div>
+          {/each}
+        </div>
+        
+        <div class="receipt-divider"></div>
+        
+        <div class="receipt-footer">
+          <div class="receipt-total">
+            <span>TOPLAM:</span>
+            <span class="total-amount">₺{(receiptData.total || 0).toFixed(2)}</span>
+          </div>
+          <div class="receipt-payment">
+            <span>Ödeme:</span>
+            <span>{receiptData.paymentMethod || 'Bilinmiyor'}</span>
+          </div>
+        </div>
+        
+        <div class="receipt-footer-text">
+          <p>Teşekkür ederiz!</p>
+          <p>İyi günler dileriz.</p>
+        </div>
+      </div>
+      
+      <div class="receipt-actions">
+        <button class="btn-print" on:click={printReceipt}>
+          🖨️ Yazdır
+        </button>
+        <button class="btn-close-receipt" on:click={closeReceiptModal}>
+          Kapat
+        </button>
+      </div>
+    </div>
+  </div>
+{/if}
+
+<!-- Receipt Modal -->
+{#if showReceiptModal && receiptData}
+  <div class="modal-overlay" on:click={closeReceiptModal}>
+    <div class="receipt-modal" on:click|stopPropagation>
+      <div class="receipt-content" id="receipt-content">
+        <div class="receipt-header">
+          <h2>{receiptData.storeName}</h2>
+          <p class="receipt-date">{receiptData.date}</p>
+          <p class="receipt-number">Fiş No: {receiptData.receiptNumber}</p>
+          <p class="receipt-user">Kasiyer: {receiptData.userName}</p>
+        </div>
+        
+        <div class="receipt-divider"></div>
+        
+        <div class="receipt-items">
+          {#each receiptData.items as item}
+            <div class="receipt-item">
+              <div class="item-name">{item.product_name || 'Bilinmeyen Ürün'}</div>
+              <div class="item-details">
+                <span>{item.quantity} x ₺{item.unit_price?.toFixed(2) || '0.00'}</span>
+                <span class="item-total">₺{((item.quantity || 0) * (item.unit_price || 0)).toFixed(2)}</span>
+              </div>
+            </div>
+          {/each}
+        </div>
+        
+        <div class="receipt-divider"></div>
+        
+        <div class="receipt-footer">
+          <div class="receipt-total">
+            <span>TOPLAM:</span>
+            <span class="total-amount">₺{(receiptData.total || 0).toFixed(2)}</span>
+          </div>
+          <div class="receipt-payment">
+            <span>Ödeme:</span>
+            <span>{receiptData.paymentMethod || 'Bilinmiyor'}</span>
+          </div>
+        </div>
+        
+        <div class="receipt-footer-text">
+          <p>Teşekkür ederiz!</p>
+          <p>İyi günler dileriz.</p>
+        </div>
+      </div>
+      
+      <div class="receipt-actions">
+        <button class="btn-print" on:click={printReceipt}>
+          🖨️ Yazdır
+        </button>
+        <button class="btn-close-receipt" on:click={closeReceiptModal}>
+          Kapat
         </button>
       </div>
     </div>
@@ -982,6 +1126,195 @@
     cursor: not-allowed;
   }
 
+  /* Receipt Modal Styles */
+  .receipt-modal {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  .receipt-content {
+    padding: 20px;
+  }
+
+  .receipt-header {
+    text-align: center;
+    margin-bottom: 15px;
+  }
+
+  .receipt-header h2 {
+    margin: 0 0 5px 0;
+    font-size: 20px;
+    color: #333;
+  }
+
+  .receipt-date,
+  .receipt-number,
+  .receipt-user {
+    margin: 3px 0;
+    font-size: 12px;
+    color: #666;
+  }
+
+  .receipt-divider {
+    border-top: 2px dashed #ccc;
+    margin: 15px 0;
+  }
+
+  .receipt-items {
+    margin-bottom: 15px;
+  }
+
+  .receipt-item {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px dotted #ddd;
+  }
+
+  .item-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 5px;
+  }
+
+  .item-details {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #666;
+  }
+
+  .item-total {
+    font-weight: 600;
+    color: #333;
+  }
+
+  .receipt-footer {
+    margin-bottom: 15px;
+  }
+
+  .receipt-total {
+    display: flex;
+    justify-content: space-between;
+    font-size: 18px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+    padding-top: 10px;
+    border-top: 2px solid #333;
+  }
+
+  .total-amount {
+    color: #4caf50;
+  }
+
+  .receipt-payment {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #666;
+  }
+
+  .receipt-footer-text {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px dashed #ccc;
+  }
+
+  .receipt-footer-text p {
+    margin: 5px 0;
+    font-size: 12px;
+    color: #999;
+  }
+
+  .receipt-actions {
+    padding: 15px 20px;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn-print {
+    flex: 1;
+    padding: 12px;
+    background: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .btn-print:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+  }
+
+  .btn-close-receipt {
+    flex: 1;
+    padding: 12px;
+    background: #f5f5f5;
+    color: #333;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .btn-close-receipt:hover {
+    background: #e0e0e0;
+  }
+
+  .btn-print-receipt {
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .btn-print-receipt:hover {
+    background: #5568d3;
+    transform: translateY(-2px);
+  }
+
+  /* Print Styles */
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+    .receipt-content,
+    .receipt-content * {
+      visibility: visible;
+    }
+    .receipt-content {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+    }
+    .receipt-actions {
+      display: none;
+    }
+    .modal-overlay {
+      background: white;
+    }
+  }
+
   .tabs {
     display: flex;
     gap: 10px;
@@ -1087,7 +1420,7 @@
 
   .table-header {
     display: grid;
-    grid-template-columns: 2fr 2fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1.5fr 1.5fr 1fr 1fr 1fr 1fr 0.8fr;
     background: #f8f9fa;
     font-weight: 600;
     padding: 15px;

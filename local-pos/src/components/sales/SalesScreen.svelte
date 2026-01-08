@@ -3,6 +3,7 @@
   import { get } from 'svelte/store';
   import { cart, cartTotal, addToCart, removeFromCart, updateCartQuantity, clearCart, user, deviceConfig } from '../../stores/appStore.js';
   import { productRepo, saleRepo, stockRepo } from '../../lib/db/database.js';
+  import { printReceipt } from '../../lib/printer/printerService.js';
   import { v4 as uuidv4 } from 'uuid';
 
   let barcodeInput = '';
@@ -297,6 +298,20 @@
       const saleId = await saleRepo.create(saleData, cartItems, payments);
       console.log('✅ Satış kaydedildi:', saleId);
 
+      // Print receipt automatically
+      try {
+        const printData = {
+          ...saleData,
+          sale_date: Date.now(),
+          user_name: currentUser.full_name,
+          store_name: config.store_name
+        };
+        await printReceipt(printData, cartItems, payments);
+      } catch (printError) {
+        console.error('⚠️ Fiş yazdırma hatası:', printError);
+        // Don't block the sale if printing fails
+      }
+
       // Sepeti temizle
       clearCart();
       selectedQuantity = 1;
@@ -457,7 +472,7 @@
   <!-- Right Panel: Barcodeless Products -->
   <div class="right-panel">
     <div class="category-header">
-      <h3>📦 Barkodsuz Ürünler</h3>
+      <h3 style="font-size: 14px; margin: 0;">📦 Barkodsuz Ürünler</h3>
       <button class="btn-add-barcodeless" on:click={() => openNewProductModal()}>
         ➕ Yeni Ekle
       </button>
@@ -573,6 +588,7 @@
   </div>
 {/if}
 
+
 <style>
   /* GENEL YAZILAR SİYAH */
   * {
@@ -602,14 +618,16 @@
   }
 
   .barcode-section {
-    margin-bottom: 8px;
+    margin-bottom: 4px;
+    margin-top: 0;
   }
 
   .barcode-section label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
     font-weight: 600;
     color: #333;
+    font-size: 13px;
   }
 
   .barcode-input {
@@ -826,15 +844,15 @@
   .payment-buttons {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 5px;
   }
 
   .btn-payment {
-    padding: 16px;
+    padding: 6px 9px;
     border: none;
-    border-radius: 8px;
-    font-size: 18px;
-    font-weight: 700;
+    border-radius: 5px;
+    font-size: 15px;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.3s;
   }
@@ -869,13 +887,13 @@
 
   .btn-clear-cart {
     width: 100%;
-    margin-top: 10px;
-    padding: 14px;
+    margin-top: 5px;
+    padding: 5px 9px;
     background: #f44336;
     border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 700;
+    border-radius: 5px;
+    font-size: 15px;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.3s;
   }
@@ -909,11 +927,11 @@
   }
 
   .btn-add-barcodeless {
-    padding: 10px 20px;
+    padding: 6px 12px;
     background: #4caf50;
     border: none;
-    border-radius: 8px;
-    font-size: 14px;
+    border-radius: 6px;
+    font-size: 11px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
@@ -1028,8 +1046,8 @@
     flex: 1;
     overflow-y: auto;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 5px;
     align-content: start;
     padding-right: 8px;
   }
@@ -1054,9 +1072,9 @@
 
   .product-card {
     background: #f8f9fa;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 8px;
     cursor: pointer;
     transition: all 0.2s;
     text-align: left;
@@ -1070,20 +1088,21 @@
 
   .product-name {
     font-weight: 600;
-    margin-bottom: 5px;
+    margin-bottom: 3px;
     color: #333;
+    font-size: 12px;
   }
 
   .product-barcode {
-    font-size: 12px;
+    font-size: 10px;
     color: #666;
   }
 
   .product-price {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 700;
     color: #667eea;
-    margin-top: 10px;
+    margin-top: 5px;
   }
 
   /* Payment Modal */
@@ -1098,6 +1117,12 @@
     align-items: center;
     justify-content: center;
     z-index: 1000;
+  }
+
+  .print-only-modal {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
   }
 
   .payment-modal {
@@ -1371,5 +1396,195 @@
 
   .btn-save:hover {
     background: #5568d3;
+  }
+
+  /* Receipt Modal Styles */
+  .receipt-modal {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  .receipt-content {
+    padding: 20px;
+  }
+
+  .receipt-header {
+    text-align: center;
+    margin-bottom: 15px;
+  }
+
+  .receipt-header h2 {
+    margin: 0 0 5px 0;
+    font-size: 20px;
+    color: #333;
+  }
+
+  .receipt-date,
+  .receipt-number,
+  .receipt-user {
+    margin: 3px 0;
+    font-size: 12px;
+    color: #666;
+  }
+
+  .receipt-divider {
+    border-top: 2px dashed #ccc;
+    margin: 15px 0;
+  }
+
+  .receipt-items {
+    margin-bottom: 15px;
+  }
+
+  .receipt-item {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px dotted #ddd;
+  }
+
+  .item-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 5px;
+  }
+
+  .item-details {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #666;
+  }
+
+  .item-total {
+    font-weight: 600;
+    color: #333;
+  }
+
+  .receipt-footer {
+    margin-bottom: 15px;
+  }
+
+  .receipt-total {
+    display: flex;
+    justify-content: space-between;
+    font-size: 18px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+    padding-top: 10px;
+    border-top: 2px solid #333;
+  }
+
+  .total-amount {
+    color: #4caf50;
+  }
+
+  .receipt-payment {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #666;
+  }
+
+  .receipt-footer-text {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px dashed #ccc;
+  }
+
+  .receipt-footer-text p {
+    margin: 5px 0;
+    font-size: 12px;
+    color: #999;
+  }
+
+  .receipt-actions {
+    padding: 15px 20px;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn-print {
+    flex: 1;
+    padding: 12px;
+    background: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .btn-print:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+  }
+
+  .btn-close-receipt {
+    flex: 1;
+    padding: 12px;
+    background: #f5f5f5;
+    color: #333;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .btn-close-receipt:hover {
+    background: #e0e0e0;
+  }
+
+  /* Print Styles */
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+    .receipt-modal,
+    .receipt-modal * {
+      visibility: visible !important;
+    }
+    .receipt-content,
+    .receipt-content * {
+      visibility: visible !important;
+    }
+    .receipt-content {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 80mm;
+      margin: 0;
+      padding: 10px;
+      background: white;
+    }
+    .receipt-actions {
+      display: none !important;
+    }
+    .modal-overlay {
+      background: white !important;
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+    .receipt-modal {
+      position: absolute;
+      left: 0;
+      top: 0;
+      box-shadow: none;
+      margin: 0;
+    }
   }
 </style>

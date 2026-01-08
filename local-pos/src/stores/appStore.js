@@ -10,7 +10,8 @@ export const deviceConfig = writable({
   store_id: null,
   store_name: null,
   is_activated: false,
-  api_url: 'http://localhost:3000'
+  api_url: 'http://localhost:3000',
+  auto_print_enabled: true // Otomatik fiş yazdırma (varsayılan: açık)
 });
 
 // Current shift
@@ -108,10 +109,44 @@ function updateCartTotal() {
   cartTotal.set(total);
 }
 
+// Printer settings
+export function toggleAutoPrint() {
+  deviceConfig.update(config => {
+    const newConfig = {
+      ...config,
+      auto_print_enabled: !config.auto_print_enabled
+    };
+    // Save to localStorage
+    localStorage.setItem('printer_settings', JSON.stringify({
+      auto_print_enabled: newConfig.auto_print_enabled
+    }));
+    return newConfig;
+  });
+}
+
+export function loadPrinterSettings() {
+  try {
+    const savedSettings = localStorage.getItem('printer_settings');
+    if (savedSettings) {
+      const settings = JSON.parse(savedSettings);
+      deviceConfig.update(config => ({
+        ...config,
+        auto_print_enabled: settings.auto_print_enabled !== undefined ? settings.auto_print_enabled : true
+      }));
+    }
+  } catch (error) {
+    console.error('Error loading printer settings:', error);
+  }
+}
+
 // Initialize from localStorage on startup
 export function initializeApp() {
   try {
     console.log('=== DALKIRAN POS STARTING ===');
+
+    // Load printer settings
+    loadPrinterSettings();
+
     const savedUser = localStorage.getItem('user');
     const savedToken = localStorage.getItem('token');
     const savedDevice = localStorage.getItem('deviceConfig');
